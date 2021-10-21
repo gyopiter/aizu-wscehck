@@ -1,12 +1,19 @@
-import paramiko, os.path, time
+#!/usr/bin/env python3
+import paramiko, os.path, time, userconfig
 
 STD12_MAX, STD34_MAX, STD56_MAX, CALL12_MAX, ILAB12_MAX = 46, 52, 50, 34, 49
-IDENTITY = 'PATH_TO_YOUR_KEY'
-USER = 'YOUR_ID'
+IDENTITY = userconfig.IDENTITY
+USER = userconfig.USER
 
 def askroom():
-    room_select = input('ROOM? \nstd1: 1, std2: 2, std3: 3, std4: 4, std5: 5, std6: 6'\
-        'ilab1: 7, ilab2: 8, call1: 9, call2:0\n>>')  
+    room_select = input(
+        '   === ROOM? ===   \n'\
+        'std1:  1   std2:  2\n'\
+        'std3:  3   std4:  4\n'\
+        'std5:  5   std6:  6\n'\
+        'ilab1: 7   ilab2: 8\n'\
+        'call1: 9   call2: 0\n'\
+        '   ===       ===   \n>> ')  
     room = ['call2', 'std1', 'std2', 'std3', 'std4', 'std5', 'std6', 'ilab1', 'ilab2', 'call1'] 
     room_select = int(room_select)
     if room_select == 1 or 2: num_workstation = STD12_MAX
@@ -25,10 +32,14 @@ if __name__ == '__main__':
     stdin, stdout, stderr = ssh.exec_command('getent passwd')
     for line in stdout: userList[line.split(':')[0]] = line.split(':')[4] 
     for i in range(1, numOfDesktop+1):
-        print(f'===== LOGIN {room}dc{i} =====')
-        command = "ssh %s@%sdc%d -i ~/.ssh/id_rsa 'ps aux' | grep -E '^[sm][0-9]{7}' | grep -v %s" % (USER, room, i, USER)
+        print(f'\n\n===== LOGIN {room}dc{i} =====')
+
+        command = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %s@%sdc%d -i ~/.ssh/id_rsa 'ps aux'"\
+            "| grep -E '^[sm][0-9]{7}'"\
+            "| grep -v %s"\
+            % (USER, room, i, USER)
+
         stdin, stdout, stderr = ssh.exec_command(command)
         for line in stdout: print(line.split()[0], userList[line.split()[0]], line.split()[10]) 
-        print()
         time.sleep(0.8)
     ssh.close()
