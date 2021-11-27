@@ -1,1 +1,1 @@
-# AIZU-workstation-Checker
+# AIZU WorkStation Checker
