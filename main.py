@@ -40,15 +40,22 @@ if __name__ == '__main__':
 
         stdin, stdout, stderr = ssh.exec_command(command)
         
+        id = ''
+
         for line in stdout:
             if re.search('^[smd][0-9]{7}', line) != None:
-                id = '';
+
                 if room == 'std1' or room == 'std2' or room == 'std3' or room == 'std4':
                     if re.search('/usr/libexec/Xorg', line) != None:
                         id = line.split()[0]
+                        break
                 else:
                     if re.search('/Applications/Avid/Avid', line) != None:
                         id = line.split()[0]
-                if id != '': print(' ', id, userList[id])
+                        break
+
+        if id != '':
+            print(' ', id, userList[id])
+
         time.sleep(0.8)
     ssh.close()
