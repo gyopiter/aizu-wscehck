@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import paramiko, os.path, time, userconfig
+from matplotlib import use
+import paramiko, os.path, time, userconfig, re
 
 STD12_MAX, STD34_MAX, STD56_MAX, CALL12_MAX, ILAB12_MAX = 46, 52, 50, 34, 49
 IDENTITY = userconfig.IDENTITY
@@ -32,14 +33,22 @@ if __name__ == '__main__':
     stdin, stdout, stderr = ssh.exec_command('getent passwd')
     for line in stdout: userList[line.split(':')[0]] = line.split(':')[4] 
     for i in range(1, numOfDesktop+1):
-        print(f'\n\n===== LOGIN {room}dc{i} =====')
+        if i < 10: print(f'\n== LOGIN  {room}dc{i} ==')
+        else: print(f'\n== LOGIN {room}dc{i} ==')
 
-        command = "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null %s@%sdc%d -i ~/.ssh/id_rsa 'ps aux'"\
-            "| grep -E '^[sm][0-9]{7}'"\
-            "| grep -v %s"\
-            % (USER, room, i, USER)
+        command = f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {room}dc{i} -i ~/.ssh/id_rsa 'ps aux'"
 
         stdin, stdout, stderr = ssh.exec_command(command)
-        for line in stdout: print(line.split()[0], userList[line.split()[0]], line.split()[10]) 
+        
+        for line in stdout:
+            if re.search('^[smd][0-9]{7}', line) != None:
+                id = '';
+                if room == 'std1' or room == 'std2' or room == 'std3' or room == 'std4':
+                    if re.search('/usr/libexec/Xorg', line) != None:
+                        id = line.split()[0]
+                else:
+                    if re.search('/Applications/Avid/Avid', line) != None:
+                        id = line.split()[0]
+                if id != '': print(' ', id, userList[id])
         time.sleep(0.8)
     ssh.close()
