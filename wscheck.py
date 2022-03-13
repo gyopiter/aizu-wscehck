@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-from matplotlib import use
 import paramiko, os.path, time, userconfig, re
 
 STD12_MAX, STD34_MAX, STD56_MAX, CALL12_MAX, ILAB12_MAX = 46, 52, 50, 34, 49
 IDENTITY = userconfig.IDENTITY
 USER = userconfig.USER
 
-class wschek:
+class wscheck:
     def askroom(self):
         room_select = input(
             '   === ROOM? ===   \n'\
@@ -47,14 +46,14 @@ class wschek:
                     if re.search('/Applications/Avid/Avid', line) != None:
                         id = line.split()[0]
                         break
-        return id
+        return str(id)
 
     def __init__(self):
         self.sshinit()
 
 
 if __name__ == '__main__':
-    wschek = wschek()
+    wschek = wscheck()
     room, num_workstation = wschek.askroom()
     for i in range(1, num_workstation+1):
         userid = wschek.get_userid(room, i)
