@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from threading import get_ident
 import paramiko, os.path, time, userconfig, re
 
 STD12_MAX, STD34_MAX, STD56_MAX, CALL12_MAX, ILAB12_MAX = 46, 52, 50, 34, 49
@@ -30,7 +31,7 @@ class wscheck:
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.ssh.connect('sshgate.u-aizu.ac.jp', username=USER, key_filename=os.path.expanduser(IDENTITY))
         stdin, stdout, stderr = self.ssh.exec_command('getent passwd')
-        for line in stdout: self.user_list[line.split(':')[0]] = line.split(':')[4] 
+        for line in stdout: self.user_list[str(line.split(':')[0])] = str(line.split(':')[4])
 
     def get_userid(self, room, desktop):
         command = f"ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null {room}dc{desktop} -i ~/.ssh/id_rsa 'ps aux'"
@@ -48,6 +49,11 @@ class wscheck:
                         break
         return str(id)
 
+    def get_id2name(self, stdid):
+        if stdid in self.user_list: 
+            return self.user_list[stdid] 
+        return None
+
     def __init__(self):
         self.sshinit()
 
@@ -61,4 +67,5 @@ if __name__ == '__main__':
             print(f"{room}dc{i} : {userid}")
         else:
             print(f"{room}dc{i} : None")
+        print(wschek.get_id2name(userid))
     
